@@ -1,9 +1,9 @@
 import { Link, Routes, Route } from 'react-router-dom';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { ethers } from 'ethers';
 
-import MusicNFTMarketplaceAbi from '../contractsData/MusicNFTMarketplace.json';
-import MusicNFTMarketplaceAddress from '../contractsData/MusicNFTMarketplace-address.json';
+import MusicNFTMarketplaceAbi from '../contractsData/MusicNFTMarketplace-DCP.json';
+import MusicNFTMarketplaceAddress from '../contractsData/MusicNFTMarketplace-DCP-address.json';
 
 import { Spinner, Navbar, Nav, Button, Container } from 'react-bootstrap';
 
@@ -13,11 +13,15 @@ import MyTokens from './MyTokens.js';
 import MyResales from './MyResales.js';
 
 import './App.css';
+import { formatEther } from 'ethers/lib/utils';
+import config from '../../config/config.json';
 
 function App() {
   const [loading, setLoading] = useState(true);
   const [account, setAccount] = useState(null);
+  const [balance, setBalance] = useState(null);
   const [contract, setContract] = useState({});
+  const [chainId, setChainId] = useState(null);
 
   const web3Handler = async () => {
     const accounts = await window.ethereum.request({
@@ -28,6 +32,13 @@ function App() {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     // Get signer
     const signer = provider.getSigner();
+    // Get balance
+    const readBalance = (await signer.getBalance()).toString();
+
+    const getChainId = await signer.getChainId();
+
+    setBalance(formatEther(readBalance));
+    setChainId(getChainId);
     loadContract(signer);
   };
 
@@ -74,18 +85,21 @@ function App() {
                   My Resales
                 </Nav.Link>
               </Nav>
-              <Nav>
+              <Nav style={{ alignItems: 'baseline' }}>
                 {account ? (
-                  <Nav.Link
-                    href={`https://etherscan.io/address/${account}`}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    className='button nav-button btn-sm mx-4'
-                  >
-                    <Button variant='outline-light'>
-                      {account.slice(0, 5) + '...' + account.slice(38, 42)}
-                    </Button>
-                  </Nav.Link>
+                  <Fragment>
+                    <Nav.Link
+                      href={`${config[chainId]?.explorerURL}${account}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='button nav-button btn-sm mx-4'
+                    >
+                      <Button variant='outline-light'>
+                        {account.slice(0, 5) + '...' + account.slice(38, 42)}
+                      </Button>
+                    </Nav.Link>
+                    <p style={{ color: '#fff' }}>{balance} ETH</p>
+                  </Fragment>
                 ) : (
                   <Button onClick={web3Handler} variant='outline-light'>
                     Connect Wallet

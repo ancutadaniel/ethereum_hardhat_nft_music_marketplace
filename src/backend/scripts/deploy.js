@@ -1,3 +1,4 @@
+const { formatUnits } = require('ethers/lib/utils');
 const { ethers, artifacts } = require('hardhat');
 
 async function main() {
@@ -22,7 +23,15 @@ async function main() {
   let nftMarketplace;
 
   console.log('Deploying contracts with the account:', deployer.address);
-  console.log('Account balance:', (await deployer.getBalance()).toString());
+  console.log('Artist account:', artist.address);
+  console.log(
+    'Deployer account balance:',
+    formatUnits(await deployer.getBalance())
+  );
+  console.log(
+    'Artist account balance:',
+    formatUnits(await artist.getBalance())
+  );
 
   // deploy contracts - new contract instance
   const NFTMarketplaceFactory = await ethers.getContractFactory(
@@ -44,11 +53,15 @@ async function main() {
      For each contract, pass the deployed contract and name to this function
      to save a copy of the contract ABI and address to the front end.
     */
-  saveFrontendFiles(nftMarketplace, 'MusicNFTMarketplace');
+  saveFrontendFiles(
+    nftMarketplace,
+    'MusicNFTMarketplace',
+    await nftMarketplace.symbol()
+  );
 }
 
 // Save a copy of the contract ABI and address to the front end
-function saveFrontendFiles(contract, name) {
+function saveFrontendFiles(contract, name, symbol) {
   const fs = require('fs');
   const contractsDir = __dirname + '/../../frontend/contractsData';
 
@@ -57,14 +70,14 @@ function saveFrontendFiles(contract, name) {
   }
 
   fs.writeFileSync(
-    contractsDir + `/${name}-address.json`,
-    JSON.stringify({ address: contract.address }, undefined, 2)
+    contractsDir + `/${name}-${symbol}-address.json`,
+    JSON.stringify({ address: contract.address, symbol: symbol }, undefined, 2)
   );
 
   const contractArtifact = artifacts.readArtifactSync(name);
 
   fs.writeFileSync(
-    contractsDir + `/${name}.json`,
+    contractsDir + `/${name}-${symbol}.json`,
     JSON.stringify(contractArtifact, null, 2)
   );
 }

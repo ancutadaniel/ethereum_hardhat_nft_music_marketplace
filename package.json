@@ -28,8 +28,8 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "deploy": "npx hardhat run src/backend/scripts/deploy.js --network localhost",
-    "deploy-ropsten": "npx hardhat run --network ropsten src/backend/scripts/deploy.js ",
+    "deploy-localhost": "npx hardhat run src/backend/scripts/deploy.js --network localhost",
+    "deploy-goerli": "npx hardhat run src/backend/scripts/deploy.js --network goerli",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

@@ -13,13 +13,19 @@ const Home = ({ contract }) => {
   const loadMarketplaceItems = async () => {
     // Get all unsold items/tokens
     const results = await contract.getAllUnsoldTokens();
+    const baseExtension = await contract.baseExtension();
 
     const getMarketItems = await Promise.all(
       results.map(async (i) => {
         // get uri url from contract
         const uri = await contract.tokenURI(i.tokenId);
         // use uri to fetch the nft metadata stored on ipfs
-        const response = await fetch(uri + '.json');
+        let response;
+        try {
+          response = await fetch(`${uri}${baseExtension}`);
+        } catch (error) {
+          console.error(error);
+        }
 
         const metadata = await response.json();
         const identicon = `data:image/png;base64,${new Identicon(
@@ -30,7 +36,7 @@ const Home = ({ contract }) => {
         // define item object
         return {
           price: i.price,
-          itemId: i.tokenId,
+          itemId: parseInt(i.tokenId),
           name: metadata.name,
           audio: metadata.audio,
           identicon,
